@@ -49,7 +49,7 @@ const routes = [
     component: () => import('../views/Restaurant.vue'),
   },
    {
-    path: '/user/1',
+    path: '/user/:id',
     name: 'user',
     component: () => import('../views/User.vue'),
   },
@@ -57,6 +57,46 @@ const routes = [
     path: '/users/top',
     name: 'users-top',
     component: () => import('../views/UsersTop.vue'),
+  },
+  {
+    path: '/admin',
+    exact: true,
+    redirect: '/admin/restaurants',
+  },
+  {
+    path: '/admin/restaurants',
+    name: 'admin-restaurants',
+    component: () => import('../views/AdminRestaurants.vue'),
+  },
+  {
+    path: '/admin/restaurants/new',
+    name: 'admin-restaurant-new',
+    component: () => import('../views/AdminRestaurantNew.vue'),
+  },
+  {
+    path: '/admin/categories',
+    name: 'admin-categories',
+    component: () => import('../views/AdminCategories.vue')
+  },
+  {
+    path: '/admin/users',
+    name: 'admin-users',
+    component: () => import('../views/AdminUsers.vue')
+  },
+  {
+    path: '/admin/user/:id/edit',
+    name: 'admin-user-edit',
+    component: () => import('../components/UserEdit.vue'),
+  },
+  {
+    path: '/admin/restaurants/:id/edit',
+    name: 'admin-restaurant-edit',
+    component: () => import('../views/AdminRestaurantEdit.vue')
+  },
+  {
+    path: '/admin/restaurants/:id',
+    name: 'admin-restaurant',
+    component: () => import('../components/AdminRestaurant.vue'),
   },
   {
     path: '*',

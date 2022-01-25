@@ -1,7 +1,8 @@
 <template>
   <div class="container py-5">
     <!-- UserProfileCard -->
-    <UserProfileCard :user-profile="userProfile" />
+    <UserProfileCard :user-profile="userProfile"
+    :followings="followings" />
     <div class="row">
       <div class="col-md-4">
         <!-- UserFollowingsCard -->
@@ -9,7 +10,6 @@
          :user-followings="followings" />
         <!-- UserFollowersCard -->
         <UserFollowerCard :user-followers="followers"/>
-
       </div>
       <div class="col-md-8">
         <!-- UserCommentsCard -->
@@ -1214,7 +1214,16 @@ export default {
   },
   data () {
     return {
-      userProfile: {},
+      userProfile: {
+        id: 0,
+        image: '',
+        name: '',
+        email: '',
+        followingsLength: 0,
+        followersLength: 0,
+        commentsLength: 0,
+        favoritedRestaurantsLength: 0
+      },
       userComments: [],
       favoritedRestaurants: [],
       followings: [],
@@ -1222,15 +1231,27 @@ export default {
     }
   },
   created () {
-    // const {id: userId} = this.route.params
-    this.fetchUser()
+    const { id } = this.$route.params
+    this.fetchUser(id)
   },
   methods: {
-    fetchUser () {
-      // console.log("userId", userId)
+    fetchUser (userId) {
+      console.log("userId", userId)
       const {profile} = dummyData
-      const {profile : {Comments, FavoritedRestaurants, Followers, Followings }} = dummyData
-      this.userProfile = profile
+      const {id,image,name,email,Comments, FavoritedRestaurants, Followers, Followings} = profile
+      // this.userProfile = profile
+      this.userProfile = {
+        ...this.userProfile,
+        ...profile,
+        id: id,
+        image: image,
+        name: name,
+        email: email,
+        followingsLength: profile.Followings.length,
+        followersLength: profile.Followers.length,
+        commentsLength: profile.Comments.length,
+        favoritedRestaurantsLength: profile.FavoritedRestaurants.length,
+      },
       this.userComments = Comments
       this.favoritedRestaurants = FavoritedRestaurants
       this.followings = Followings
