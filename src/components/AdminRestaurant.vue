@@ -11,8 +11,8 @@
         <img
           class="img-responsive center-block"
           :src="restaurant.image | emptyImage"
-          style="width: 250px;margin-bottom: 25px;"
-        >
+          style="width: 250px; margin-bottom: 25px"
+        />
         <div class="well">
           <ul class="list-unstyled">
             <li>
@@ -34,75 +34,87 @@
         <p>{{ restaurant.description }}</p>
       </div>
     </div>
-    <hr>
-    <button
-      type="button"
-      class="btn btn-link"
-      @click="$router.back()"
-    >回上一頁</button>
+    <hr />
+    <button type="button" class="btn btn-link" @click="$router.back()">
+      回上一頁
+    </button>
   </div>
 </template>
 
 <script>
-const dummyData = {
-  restaurant: {
-    id: 2,
-    name: 'Mrs. Mckenzie Johnston',
-    tel: '567-714-6131 x621',
-    address: '61371 Rosalinda Knoll',
-    opening_hours: '08:00',
-    description:
-      'Quia pariatur perferendis architecto tenetur omnis pariatur tempore.',
-    image: 'https://loremflickr.com/320/240/food,dessert,restaurant/?random=2',
-    createdAt: '2019-06-22T09:00:43.000Z',
-    updatedAt: '2019-06-22T09:00:43.000Z',
-    CategoryId: 3,
-    Category: {
-      id: 3,
-      name: '義大利料理',
-      createdAt: '2019-06-22T09:00:43.000Z',
-      updatedAt: '2019-06-22T09:00:43.000Z'
-    }
-  }
-}
-import {emptyImageFilter} from '../utilities/mixins'
+import { emptyImageFilter } from "../utilities/mixins";
+import { Toast } from "./../utilities/helpers";
+import adminAPI from "./../apis/admin";
+
 export default {
-  mixins:[emptyImageFilter],
-  name: 'AdminRestaurant',
+  mixins: [emptyImageFilter],
+  name: "AdminRestaurant",
   data() {
     return {
       restaurant: {
         id: -1,
-        name: '',
-        categoryName: '',
-        image: '',
-        openingHours: '',
-        tel:'',
-        address: '',
-        description: '',
-      }
-    }
+        name: "",
+        categoryName: "",
+        image: "",
+        openingHours: "",
+        tel: "",
+        address: "",
+        description: "",
+      },
+    };
   },
   mounted() {
-    const {id : restaurantId} = this.$route.params
-    this.fetchRestaurant(restaurantId)
+    const { id: restaurantId } = this.$route.params;
+    this.fetchRestaurant(restaurantId);
+  },
+  beforeRouteUpdate (to, from, next) {
+    const {id} = to.params
+    this.fetchRestaurant(id)
+    console.log(from)
+    next ()
   },
   methods: {
-    fetchRestaurant(restaurantId){
-      console.log(restaurantId)
-      const {restaurant} = dummyData
-      this.restaurant = {
-        ...this.restaurant,
-        id: restaurant.id,
-        name: restaurant.name,
-        categoryName: restaurant.Category.name,
-        image: restaurant.image,
-        openingHours: restaurant.opening_hours,
-        tel: restaurant.tel,
-        address: restaurant.address,
-        description: restaurant.description,
-      } 
-    }
-  }
-}
+    async fetchRestaurant(restaurantId) {
+      try {
+        const {data} = await adminAPI.restaurants.getDetail({restaurantId})
+        console.log('unit',data)
+
+        if (data.status === 'error') {
+          throw new Error (data.message)
+        }
+
+        const {
+          id,
+          name,
+          Category: category,
+          image,
+          opening_hours: openingHours,
+          tel,
+          address,
+          description,
+        } = data.restaurant
+
+        const {categoryName} = category.name
+
+        this.restaurant = {
+          ...this.restaurant,
+          id,
+          name,
+          categoryName,
+          image,
+          openingHours,
+          tel,
+          address,
+          description,
+        };
+      } catch (error) {
+        console.log(error);
+        Toast.fire({
+          icon: "error",
+          title: "無法成功顯示餐廳個案！",
+        });
+      }
+    },
+  },
+};
 </script>

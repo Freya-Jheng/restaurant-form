@@ -7,22 +7,26 @@
         alt="Card image cap"
         width="286px"
         height="180px"
-      >
+      />
       <div class="card-body">
         <p class="card-text title-wrap">
-          <router-link :to="{name: 'restaurant', params: {id : restaurant.id}}">
-            {{restaurant.name}}
+          <router-link
+            :to="{ name: 'restaurant', params: { id: restaurant.id } }"
+          >
+            {{ restaurant.name }}
           </router-link>
         </p>
-        <span class="badge badge-secondary">{{restaurant.Category.name}}</span>
+        <span class="badge badge-secondary">{{
+          restaurant.Category.name
+        }}</span>
         <p class="card-text text-truncate">
-          {{restaurant.description}}
+          {{ restaurant.description }}
         </p>
       </div>
       <div class="card-footer">
         <button
           v-if="restaurant.isFavorited"
-          @click.stop.prevent="deleteFavorite"
+          @click.stop.prevent="deleteFavorite(restaurant.id)"
           type="button"
           class="btn btn-danger btn-border favorite mr-2"
         >
@@ -30,7 +34,7 @@
         </button>
         <button
           v-else
-          @click.stop.prevent="addFavorite"
+          @click.stop.prevent="addFavorite(restaurant.id)"
           type="button"
           class="btn btn-primary btn-border favorite mr-2"
         >
@@ -38,7 +42,7 @@
         </button>
         <button
           v-if="restaurant.isLiked"
-          @click.stop.prevent="deleteLike"
+          @click.stop.prevent="deleteLike(restaurant.id)"
           type="button"
           class="btn btn-danger like mr-2"
         >
@@ -46,7 +50,7 @@
         </button>
         <button
           v-else
-          @click.stop.prevent="addLike"
+          @click.stop.prevent="addLike(restaurant.id)"
           type="button"
           class="btn btn-primary like mr-2"
         >
@@ -58,44 +62,97 @@
 </template>
 
 <script>
+import { Toast } from "./../utilities/helpers";
+import userAPI from "./../apis/users";
+
 export default {
   props: {
     initialRestaurant: {
       type: Object,
       required: true,
-    }
+    },
   },
-  data () {
+  data() {
     return {
-      restaurant: this.initialRestaurant
-    }
+      restaurant: this.initialRestaurant,
+    };
   },
   methods: {
-    addFavorite() {
-      this.restaurant = {
-        ...this.restaurant,
-        isFavorited: true
+    async addFavorite(restaurantId) {
+      try {
+        const { data } = await userAPI.addFavorite({ restaurantId });
+        if (data.status !== "success") {
+          throw new Error(data.message);
+        }
+        this.restaurant = {
+          ...this.restaurant,
+          isFavorited: true,
+        };
+      } catch (error) {
+        Toast.fire({
+          icon: "error",
+          title: "無法將餐廳加入我的最愛，請稍候！",
+        });
+        console.log(error);
       }
     },
-    deleteFavorite() {
-      this.restaurant = {
-        ...this.restaurant,
-        isFavorited: false
+    async deleteFavorite (restaurantId) {
+      try {
+        const {data} = await userAPI.deleteFavorite({restaurantId})
+        if (data.status !== 'success') {
+          throw new Error (data.message)
+        }
+        this.restaurant = {
+          ...this.restaurant,
+          isFavorited: false,
+        };
+      } catch (error) {
+        Toast.fire({
+          icon: 'error',
+          title: '無法將餐廳從我的最愛移除，請稍候！'
+        })
+        console.log(error);
       }
     },
-    addLike() {
-      this.restaurant = {
-        ...this.restaurant,
-        isLiked: true
+    async addLike (restaurantId) {
+      try{
+        const {data} = await userAPI.addLiked({restaurantId})
+        console.log(data)
+        if (data.status !== 'success') {
+          throw new Error(data.message)
+        }
+        this.restaurant = {
+          ...this.restaurant,
+          isLiked: true,
+        }
+      } catch (error) {
+        Toast.fire ({
+          icon: 'error',
+          title: '無法成功按讚，請稍後再試！'
+        })
+        console.log(error)
       }
     },
-    deleteLike() {
-      this.restaurant = {
-        ...this.restaurant,
-        isLiked: false
+    async deleteLike (restaurantId) {
+      try {
+        const {data} = await userAPI.deleteLiked({restaurantId})
+        
+        if (data.status !== 'success') {
+          throw new Error (data.message)
+        }
+
+        this.restaurant = {
+          ...this.restaurant,
+          isLiked: false,
+        }
+      } catch (error) {
+        Toast.fire ({
+          icon: 'error',
+          title: '無法成功移除讚，請稍候再試！'
+        })
+        console.log(error)
       }
     }
   },
-}
-
+};
 </script>
