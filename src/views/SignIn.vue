@@ -90,6 +90,10 @@ export default {
         }
         this.isAuthorized = true
         localStorage.setItem("token", data.token);
+        // 將資料加入到VueX裡面
+        this.$store.commit('setCurrentUser', data.user)
+
+        // back to the home page
         this.$router.push("/restaurants");
       } catch (error) {
         this.isAuthorized = false

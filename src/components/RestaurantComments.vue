@@ -35,17 +35,7 @@
 </template>
 
 <script>
-const dummyUser = {
-  currentUser: {
-    id: 1,
-    name: '管理者',
-    email: 'root@example.com',
-    image: 'https://i.pravatar.cc/300',
-    isAdmin: true
-  },
-  isAuthenticated: true
-}
-
+import { mapState } from 'vuex'
 import { fromNowFilter } from '../utilities/mixins'
 
 export default {
@@ -55,10 +45,8 @@ export default {
       required: true,
     },
   },
-  data() {
-    return {
-      currentUser: dummyUser.currentUser,
-    }
+  computed: {
+    ...mapState(['currentUser'])
   },
   mixins: [ fromNowFilter ],
   methods: {

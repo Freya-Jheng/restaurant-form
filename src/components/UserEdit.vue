@@ -4,7 +4,7 @@
       <div class="form-group">
         <label for="name">Name</label>
         <input
-          v-model="userData.name"
+          v-model="name"
           id="name"
           type="text"
           name="name"
@@ -16,7 +16,7 @@
 
       <div class="form-group">
         <label for="image">Image</label>
-        <img v-if="userData.image" :src="userData.image" class="image d-block img-thumbnail mb-3" style="width: 90px; height: 90px;">
+        <img v-if="image" :src="image" class="image d-block img-thumbnail mb-3" style="width: 90px; height: 90px;">
         <input
           id="image"
           type="file"
@@ -30,7 +30,7 @@
       <div class="form-group">
         <label for="email">E-mail</label>
         <input
-          v-model="userData.email"
+          v-model="email"
           id="email"
           type="text"
           name="email"
@@ -43,7 +43,7 @@
       <div class="form-group">
         <label for="password">Password</label>
         <input
-          v-model="userData.password"
+          v-model="password"
           id="password"
           type="text"
           name="password"
@@ -64,46 +64,51 @@
 </template>
 
 <script>
-const dummyUser = {
-  'profile': {
-    'id': 1,
-    'name': 'root',
-    'email': 'root@example.com',
-    'password': '$2a$10$OJ3jR93XlEMrQtYMWOIQh.EINWgaRFTXkd0Xi5OC/Vz4maztUXEPe',
-    'image': 'https://i.imgur.com/58ImzMM.png',
-  }
-}
+import { mapState } from 'vuex'
+// import userAPI from './../apis/users'
+// import { Toast } from './../utilities/helpers'
 
 export default {
   data () {
     return {
-      userData : {
-        id: '',
-        name: '',
-        email: ' ',
-        password: '',
-        image: '',
-      }
+      id: 0,
+      name: '',
+      email: ' ',
+      password: '',
+      image: '',
+    }
+  },
+  computed: {
+    ...mapState(['currentUser'])
+  },
+  watch: {
+    currentUser(userId){
+      if (userId === -1) return
+      const {id} = this.$route.params
+      this.setUser(id)
     }
   },
   created(){
+    if (this.currentUser.id === -1) return
     const {id} = this.$route.params
-    this.fetchUser(id)
+    this.setUser(id)
   },
   methods: {
-    fetchUser(userId){
-      console.log("UserEdit : ", userId)
-      const {profile} = dummyUser
-      const {id, name, email, password, image} = profile
-      this.userData = {
-        ...this.userData,
-        ...profile,
-        id,
-        name,
-        email,
-        password,
-        image,
-      }
+    setUser (userId) {
+        const { id, name, email, image, password} = this.currentUser
+        console.log(userId, id)
+        console.log(this.currentUser)
+        // 在這裏console.log出來id 跟 userId兩者，同樣的名字但是id卻是不一樣的，是否為後端資料有被更動？
+        // if (id.toString() !== userId.toString()) {
+        //   this.$router.push({ name: 'not-found' })
+        //   return
+        // }
+
+        this.id = id,
+        this.name = name,
+        this.email = email,
+        this.password = password,
+        this.image = image
     },
     handleSubmit(e){
       const form = e.target

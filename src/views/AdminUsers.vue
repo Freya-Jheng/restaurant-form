@@ -1,8 +1,11 @@
 <template>
   <div class="container py-5">
-    <!-- AdminNav Component -->
     <AdminNav />
-    <table class="table">
+
+    <!-- <Spinner v-if="isLoading" /> -->
+    <table
+      class="table"
+    >
       <thead class="thead-dark">
         <tr>
           <th scope="col">
@@ -23,31 +26,25 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="user in users" :key="user.id">
+        <tr
+          v-for="user in users"
+          :key="user.id"
+        >
           <th scope="row">
-            {{user.id}}
+            {{ user.id }}
           </th>
-          <td>{{user.email}}</td>
-          <td>
-            <span v-show="!user.isAdmin">admin</span>
-            <span v-show="user.isAdmin">user</span>
-          </td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.isAdmin ? 'admin' : 'user' }}</td>
           <td>
             <button
-              @click.stop.prevent="toggleIsAdmin(user.id)"
-              v-show="user.isAdmin"
+              v-if="currentUser.id !== user.id"
               type="button"
               class="btn btn-link"
+              @click="
+                toggleUserRole({ userId: user.id, isAdmin: user.isAdmin })
+              "
             >
-              set as admin
-            </button>
-            <button
-              @click.stop.prevent="toggleIsAdmin(user.id)"
-              v-show="!user.isAdmin"
-              type="button"
-              class="btn btn-link"
-            >
-              set as user
+              {{ user.isAdmin ? 'set as user' : 'set as admin' }}
             </button>
           </td>
         </tr>
@@ -57,62 +54,78 @@
 </template>
 
 <script>
-import AdminNav from '../components/AdminNav.vue'
-import uuid from 'uuid/v4'
-
-const dummyData = {
-  users: [
-    {
-      id: uuid(),
-      email: 'root@examplee.com',
-      role: 'admin',
-    },
-    {
-      id: uuid(),
-      email: 'user1@examplee.com',
-      role: 'user',
-    },
-    {
-      id: uuid(),
-      email: 'user2@examplee.com',
-      role: 'user',
-    }
-  ]
-}
-
+import { mapState } from 'vuex'
+import AdminNav from './../components/AdminNav'
+import adminAPI from './../apis/admin'
+import { Toast } from './../utilities/helpers'
+// import Spinner from './../components/Spinner'
 
 export default {
   components: {
     AdminNav,
+    // Spinner
   },
   data () {
     return {
       users: [],
+      // isLoading: true
     }
   },
+  computed: {
+    ...mapState(['currentUser'])
+  },
   created () {
-    this.fetchUser()
+    this.fetchUsers()
   },
   methods: {
-    fetchUser(){
-      this.users = dummyData.users.map (user => {
-        return {
-          ...user,
-          isAdmin: false,
+    async fetchUsers () {
+      try {
+        // this.isLoading = true
+        const { data } = await adminAPI.users.get()
+        console.log(this.currentUser)
+        if (data.status === 'error') {
+          throw new Error(data.message)
         }
-      })
+        this.users = data.users
+        // this.isLoading = false
+      } catch (error) {
+        console.error(error.message)
+        // this.isLoading = false
+        Toast.fire({
+          icon: 'error',
+          title: '無法取得會員資料，請稍後再試'
+        })
+      }
     },
-    toggleIsAdmin (userId) {
-      this.users = this.users.map(user => {
-        if (user.id === userId) {
-          return {
-            ...user,
-            isAdmin: !user.isAdmin,
+    async toggleUserRole ({ userId, isAdmin }) {
+      try {
+        const { data } = await adminAPI.users.update({
+          userId,
+          isAdmin
+        })
+
+        if (data.status === 'error') {
+          throw new Error(data.message)
+        }
+
+        this.users = this.users.map(user => {
+          if (user.id === userId) {
+            return {
+              ...user,
+              isAdmin: !isAdmin
+            }
           }
-        }
-        return user
-      })
-    },
+
+          return user
+        })
+      } catch (error) {
+        console.error(error.message)
+        Toast.fire({
+          icon: 'error',
+          title: '無法更新會員角色，請稍後再試'
+        })
+      }
+    }
   }
 }
 </script>
