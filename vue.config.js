@@ -1,4 +1,4 @@
 module.exports = {
   publicPath:
-    process.env.NODE_ENV === 'production' ? '/restaurant-forum/' : '/'
+    process.env.NODE_ENV === 'production' ? '/restaurant-form/' : '/'
 }
